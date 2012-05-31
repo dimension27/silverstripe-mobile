@@ -32,6 +32,7 @@ class MobileSiteConfigExtension extends DataObjectDecorator {
 	 * Append Extra Fields onto the {@link SiteConfig}
 	 */
 	public function extraStatics() {
+		$httpHost = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
 		return array(
 			'db' => array(
 				'MobileDomain' => 'Varchar(50)',
@@ -40,8 +41,8 @@ class MobileSiteConfigExtension extends DataObjectDecorator {
 				'MobileSiteType' => 'Enum("Disabled,RedirectToDomain,MobileThemeOnly","Disabled")',
 			),
 			'defaults' => array(
-				'MobileDomain' => 'http://m.' . $_SERVER['HTTP_HOST'],
-				'FullSiteDomain' => 'http://' . $_SERVER['HTTP_HOST'],
+				'MobileDomain' => "http://m.{$httpHost}",
+				'FullSiteDomain' => "http://{$httpHost}",
 				'MobileTheme' => 'blackcandymobile',
 				'MobileSiteType' => 'Disabled'
 			)
