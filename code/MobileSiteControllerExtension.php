@@ -185,12 +185,16 @@ class MobileSiteControllerExtension extends Extension {
 
 	protected function setFullsiteCookie( $value ) {
 		if( $value !== self::$fullSiteValue ) {
+			// If requesting the mobile site, just expire the cookie
+			$time = $value === 0 ? -3600 : self::$cookie_expire_time;
+
 			// When swtiching to the desktop version on a different (sub)domain,
 			// the cookie needs to be set for that (sub)domain else it is
 			// automatically set to the mobile domain
 			$domain = empty($config->FullSiteDomain) ? null : ".{$parsedURL['host']}";
 
-			Cookie::set('fullSite', $value, self::$cookie_expire_time, null, $domain);
+			Cookie::set('fullSite', $value, $time, null, $domain);
+			self::$fullSiteValue = $value;
 		}
 	}
 
