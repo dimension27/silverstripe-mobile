@@ -9,10 +9,15 @@ class MobileSiteControllerExtension extends Extension {
 
 	/**
 	 * The expiration time of a cookie set for full site requests
-	 * from the mobile site. Default is 30 minutes (1800 seconds)
+	 * from the mobile site. Default is ~30 minutes (expressed in days)
 	 * @var int
 	 */
-	public static $cookie_expire_time = 1800;
+	public static $cookie_expire_time = 0.02;
+
+	/**
+	 * The value that the fullSite cookie has been set to in this session
+	 */
+	public static $fullSiteValue = null;
 
 	/**
 	 * Stores state information as to which site is currently served.
@@ -39,28 +44,22 @@ class MobileSiteControllerExtension extends Extension {
 		// If we've accessed the homepage as /home/, then we redirect to / and don't want to double redirect here
 		if( Director::redirected_to() ) return;
 
-		// Enforce the site (cookie expires in 30 minutes)
+		// Enforce the site (cookie expires in ~30 minutes)
 		$fullSite = $request->getVar('fullSite');
 		$fullSiteCookie = Cookie::get('fullSite');
 		if( is_numeric($fullSite) ) {
-			Cookie::set('fullSite', (int)$fullSite);
 			$fullSiteCookie = (int)$fullSite;
 			$parsedURL = parse_url($config->FullSiteDomain);
 
-			if( !headers_sent($file, $line) ) {
-				// use the host of the desktop version of the site to set cross-(sub)domain cookie
-				if( !empty($config->FullSiteDomain) )
-					setcookie('fullSite', $fullSite, time() + self::$cookie_expire_time, null, '.' . $parsedURL['host']);
-				// otherwise just use a normal cookie with the default domain
-				else setcookie('fullSite', $fullSite, time() + self::$cookie_expire_time);
-			}
-			else user_error(sprintf('Cookie \'fullSite\' can\'t be set. Output started at line %s in %s', $line, $file));
+			$this->setFullsiteCookie($fullSiteCookie);
 		}
 
 		// Site is being forced via flag or cookie
 		if( is_numeric($fullSiteCookie) ) {
 			// Full site requested
 			if( $fullSiteCookie ) {
+				// Renew fullSite cookie's lease time
+				$this->setFullsiteCookie($fullSiteCookie);
 				if( $this->onMobileDomain() && $config->MobileSiteType == 'RedirectToDomain' )
 					return $this->owner->redirect($config->FullSiteDomain, 301);
 				SSViewer::set_theme($config->Theme);
@@ -182,6 +181,17 @@ class MobileSiteControllerExtension extends Extension {
 		SSViewer::set_theme($config->MobileTheme);
 		self::$is_mobile = true;
 		self::$mobile_theme_set = $config->MobileTheme;
+	}
+
+	protected function setFullsiteCookie( $value ) {
+		if( $value !== self::$fullSiteValue ) {
+			// When swtiching to the desktop version on a different (sub)domain,
+			// the cookie needs to be set for that (sub)domain else it is
+			// automatically set to the mobile domain
+			$domain = empty($config->FullSiteDomain) ? null : ".{$parsedURL['host']}";
+
+			Cookie::set('fullSite', $value, self::$cookie_expire_time, null, $domain);
+		}
 	}
 
 }
