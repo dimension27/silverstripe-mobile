@@ -39,12 +39,14 @@ class MobileSiteConfigExtension extends DataObjectDecorator {
 				'FullSiteDomain' => 'Varchar(50)',
 				'MobileTheme' => 'Varchar(255)',
 				'MobileSiteType' => 'Enum("Disabled,RedirectToDomain,MobileThemeOnly","Disabled")',
+				'TabletIsDesktop' => 'Boolean'
 			),
 			'defaults' => array(
 				'MobileDomain' => "http://m.{$httpHost}",
 				'FullSiteDomain' => "http://{$httpHost}",
 				'MobileTheme' => 'blackcandymobile',
-				'MobileSiteType' => 'Disabled'
+				'MobileSiteType' => 'Disabled',
+				'TabletIsDesktop' => false
 			)
 		);
 	}
@@ -164,7 +166,8 @@ class MobileSiteConfigExtension extends DataObjectDecorator {
 				new OptionsetField('MobileSiteType', _t('MobileSiteConfig.MOBILESITEBEHAVIOUR', 'Mobile site behaviour'), $this->getMobileSiteTypes()),
 				new TextField('MobileDomain', _t('MobileSiteConfig.MOBILEDOMAIN', 'Mobile domain <small>(e.g. m.mysite.com, needs to be different from "Full site domain")</small>')),
 				new TextField('FullSiteDomain', _t('MobileSiteConfig.FULLSITEDOMAIN', 'Full site domain <small>(e.g. mysite.com, usually doesn\'t need to be changed)</small>')),
-				new DropdownField('MobileTheme', _t('MobileSiteConfig.MOBILETHEME', 'Mobile theme'), $this->owner->getAvailableThemes(), '', null, _t('SiteConfig.DEFAULTTHEME', '(Use default theme)'))
+				new DropdownField('MobileTheme', _t('MobileSiteConfig.MOBILETHEME', 'Mobile theme'), $this->owner->getAvailableThemes(), '', null, _t('SiteConfig.DEFAULTTHEME', '(Use default theme)')),
+				new CheckboxField('TabletIsDesktop', 'Tablets display full site')
 			)
 		);
 	}

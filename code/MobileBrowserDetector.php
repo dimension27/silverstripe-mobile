@@ -18,11 +18,12 @@ class MobileBrowserDetector {
 	public static function is_android() {
 		return (stripos($_SERVER['HTTP_USER_AGENT'], 'android') !== false) ? true : false;
 	}
-
 	public static function is_iphone() {
 		return (preg_match('/(ipod|iphone)/i', $_SERVER['HTTP_USER_AGENT'])) ? true : false;
 	}
-
+	public static function is_ipad() {
+		return (preg_match('/(iPad)/i', $_SERVER['HTTP_USER_AGENT'])) ? true : false;
+	}
 	public static function is_opera_mini() {
 		return (stripos($_SERVER['HTTP_USER_AGENT'], 'opera mini') !== false) ? true : false;
 	}
@@ -53,6 +54,10 @@ class MobileBrowserDetector {
 		switch(true) {
 			case(self::is_iphone()):
 				$isMobile = true;
+				break;	
+			case(self::is_ipad()):
+				$config = SiteConfig::current_site_config();
+				$isMobile = !$config->TabletIsDesktop;
 				break;
 			case(self::is_android()):
 				$isMobile = true;
